@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>MySQL数据库字典</title>
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <style type="text/css">
+/* reset */
+html,body,h1,h2,h3,h4,h5,h6,div,dl,dt,dd,ul,ol,li,p,blockquote,pre,hr,figure,table,caption,th,td,form,fieldset,legend,input,button,textarea,menu{margin:0;padding:0;}
+header,footer,section,article,aside,nav,hgroup,address,figure,figcaption,menu,details{display:block;}
+table{border-collapse:collapse;border-spacing:0;}
+caption,th{text-align:left;font-weight:normal;}
+html,body,fieldset,img,iframe,abbr{border:0;}
+i,cite,em,var,address,dfn{font-style:normal;}
+[hidefocus],summary{outline:0;}
+li{list-style:none;}
+h1,h2,h3,h4,h5,h6,small{font-size:100%;}
+sup,sub{font-size:83%;}
+pre,code,kbd,samp{font-family:inherit;}
+q:before,q:after{content:none;}
+textarea{overflow:auto;resize:none;}
+label,summary{cursor:default;}
+a,button{cursor:pointer;}
+h1,h2,h3,h4,h5,h6,em,strong,b{font-weight:bold;}
+del,ins,u,s,a,a:hover{text-decoration:none;}
+body,textarea,input,button,select,keygen,legend{font:12px/1.14 arial,\5b8b\4f53;color:#333;outline:0;}
+body{background:#fff;}
+a,a:hover{color:#333;} 
+/* function */
+.f-cb:after,.f-cbli li:after{display:block;clear:both;visibility:hidden;height:0;overflow:hidden;content:".";}
+.f-cb,.f-cbli li{zoom:1;}
+.f-ib{display:inline-block;*display:inline;*zoom:1;}
+.f-dn{display:none;}
+.f-db{display:block;}
+.f-fl{float:left;}
+.f-fr{float:right;}
+.f-pr{position:relative;}
+.f-prz{position:relative;zoom:1;}
+.f-oh{overflow:hidden;}
+.f-ff0{font-family:arial,\5b8b\4f53;}
+.f-ff1{font-family:"Microsoft YaHei",\5fae\8f6f\96c5\9ed1,arial,\5b8b\4f53;}
+.f-fs1{font-size:12px;}
+.f-fs2{font-size:14px;}
+.f-fwn{font-weight:normal;}
+.f-fwb{font-weight:bold;}
+.f-tal{text-align:left;}
+.f-tac{text-align:center;}
+.f-tar{text-align:right;}
+.f-taj{text-align:justify;text-justify:inter-ideograph;}
+.f-vam,.f-vama *{vertical-align:middle;}
+.f-wsn{word-wrap:normal;white-space:nowrap;}
+.f-pre{overflow:hidden;text-align:left;white-space:pre-wrap;word-wrap:break-word;word-break:break-all;}
+.f-wwb{white-space:normal;word-wrap:break-word;word-break:break-all;}
+.f-ti{overflow:hidden;text-indent:-30000px;}
+.f-ti2{text-indent:2em;}
+.f-lhn{line-height:normal;}
+.f-tdu,.f-tdu:hover{text-decoration:underline;}
+.f-tdn,.f-tdn:hover{text-decoration:none;}
+.f-toe{overflow:hidden;word-wrap:normal;white-space:nowrap;text-overflow:ellipsis;}
+.f-csp{cursor:pointer;}
+.f-csd{cursor:default;}
+.f-csh{cursor:help;}
+.f-csm{cursor:move;}
+.f-usn{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;-o-user-select:none;user-select:none;} 
+
+.thd { width: 90%;margin:10px auto;}
+#dict_cnt { width: 90%;margin:30px auto;}
+table{width:100%;border-collapse:collapse;}
+td{border:1px solid #cecece;} 
+th{background:#efefef;border:1px solid #cecece;}
+.t{margin-top:10px;}
+.t1{margin-top:10px;}
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="thd">
+            <div class="hd" id="t1_hd"><b>连接信息</b></div>
+            <div class="bd" id="t1_bd">
+                <div class="row1 f-cb">
+                    <div class="item f-fl">主机: <input type="text" name="dbhost" class="dbhost" id="dbhost" value="localhost"></div>
+                    <div class="item f-fl">用户: <input type="text" class="dbuser" id="dbuser" name="dbuser" value="root"></div>
+                    <div class="item f-fl">密码: <input type="text" class="dbpwd" id="dbpwd" name="dbpwd"></div>
+                    <div class="item f-fl">
+                        <button class="btn_connect" id="btn_connect">连接</button>
+                    </div>
+                </div>
+                <div class="row row2">
+                    <div class="item">
+                        <select name="dbname" id="dbname" class="dbname">
+                            <option value="">请选择...</option>
+                        </select>
+                        <button class="btn_listtable" id="btn_listtable" disabled="disabled">列出表信息</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="thd">
+            <div class="hd"></div>
+            <div class="bd">
+                <div class="row row1 f-cb">
+                    <div class="f-fl table">
+                        <select name="tables" id="tables" class="tables" size="10"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="thd">
+            <div class="hd"></div>
+            <div class="bd">
+                <div class="f-cb">
+                    <div class="row row1 f-fl"><button class="btn_gendict" id="btn_gendict" disabled="disabled">生成字典</button></div>
+                    <div class="row row1 f-fl"><button class="btn_freeconnect" id="btn_freeconnect" disabled="disabled">释放连接</button></div>
+                    <div class="row row1 f-fl"><button class="btn_download" id="btn_download" disabled="disable">下载</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="thd">
+            <div class="hd"></div>
+            <div class="bd">
+                <div class="row row1">
+                    <div id="dict_cnt"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function(){
+            var _chost = $('#dbhost').val();
+            var _cname = $('#dbname').val();
+            var _cuser = $('#dbuser').val();
+            var _cpwd = $('#dbpwd').val();
+
+            $('#dbhost').bind('change', function(){ _chost = $('#dbhost').val(); });
+            $('#dbname').bind('change', function(){ _cname = $('#dbname').val(); });
+            $('#dbuser').bind('change', function(){ _cuser = $('#dbuser').val(); });
+            $('#dbpwd').bind('change', function(){ _cpwd = $('#dbpwd').val(); });
+            $('#dbhost').bind('blur', function(){ _chost = $('#dbhost').val(); });
+            $('#dbname').bind('blur', function(){ _cname = $('#dbname').val(); });
+            $('#dbuser').bind('blur', function(){ _cuser = $('#dbuser').val(); });
+            $('#dbpwd').bind('blur', function(){ _cpwd = $('#dbpwd').val(); });
+
+            var disableCInfo = function() {
+                $('#dbhost').attr('disabled', 'disabled');
+                $('#dbuser').attr('disabled', 'disabled');
+                $('#dbpwd').attr('disabled', 'disabled');
+                $('#btn_connect').attr('disabled', 'disabled');
+            };
+
+            var freeCInfo = function() {
+                $('#dbhost').removeAttr('disabled');
+                $('#dbuser').removeAttr('disabled');
+                $('#dbpwd').removeAttr('disabled');
+                $('#dbname').html('');
+                $('#tables').html('<option value="">请选择...</option>');
+                $('#dict_cnt').html('');
+                $('#btn_connect').removeAttr('disabled');
+                $('#btn_listtable').attr('disabled', 'disabled');
+                $('#btn_gendict').attr('disabled', 'disabled');
+                $('#btn_download').attr('disabled', 'disabled');
+            }
+            var downDict = function() {
+                var _dict_cnt = $('#dict_cnt').html();
+                if(_dict_cnt.length > 100) {
+                    var _html = '<!DOCTYPE html> \
+<html lang="en"> \
+<head> \
+    <meta charset="UTF-8"> \
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"> \
+    <meta name="renderer" content="webkit"> \
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"> \
+    <meta name="author" content=""> \
+    <meta name="keywords" content=""> \
+    <meta name="description" content=""> ';
+    _html += '<title>Dict: '+ _cname + '</title> ';
+    _html+= '<style>table{width:100%;border-collapse:collapse;} td{border:1px solid #cecece;} th{background:#efefef;border:1px solid #cecece;}.t{margin-top:10px;} .t1{margin-top:10px;}</style> \
+</head> \
+<body>';
+    _html += _dict_cnt;
+    _html += '</body></html>';
+                    $.ajax({
+                        url: 'api.php?act=savedict',
+                        data: { dict: _html, dbname: _cname },
+                        type: 'POST',
+                        success: function(data) {
+                            if(data.success) {
+                                window.open(data.path);
+                            }
+                        }
+                    });
+                } else {
+                    alert('请先按顺序生成数据字典');
+                }
+            };
+            freeCInfo();
+            $('#btn_freeconnect').click(freeCInfo);
+            $('#btn_download').click(downDict);
+
+            $('#t1_hd').click(function(){ $('#t1_bd').toggle(); });
+            $('#btn_connect').click(function(){
+                $.ajax({
+                    url: 'api.php?act=listdb',
+                    data: { 'dbhost': _chost, 'dbuser': _cuser, 'dbpwd': _cpwd },
+                    type: 'POST',
+                    success: function(data) {
+                        $('#tables').html('');
+                        $('#dict_cnt').html('');
+                        $('#btn_gendict').attr('disabled', 'disabled');
+                        var _html = '<option value="">Select...</option>';
+                        for(var i in data) {
+                            _html += '<option value="'+data[i].SCHEMA_NAME+'">'+data[i].SCHEMA_NAME+'</option>';
+                        }
+                        $('#dbname').html(_html);
+                        if(typeof(data) == 'object' && data.length > 0) {
+                            $('#btn_listtable').removeAttr('disabled');
+                            $('#btn_freeconnect').removeAttr('disabled');
+                            disableCInfo();
+                        }
+                    }
+                });
+                $('#btn_listtable').click(function(){
+                    $.ajax({
+                        url: 'api.php?act=listtable',
+                        data: { 'dbhost': $('#dbhost').val(), 'dbuser': $('#dbuser').val(), 'dbpwd': $('#dbpwd').val(), 'dbname': $('#dbname').val() },
+                        type:'POST',
+                        success: function(data) {
+                            $('#tables').html('');
+                            $('#dict_cnt').html('');
+                            var _html = '';
+                            for(var i in data) {
+                                _html += '<option value="'+data[i].TABLE_NAME+'">'+data[i].TABLE_NAME+'</option>';
+                            }
+                            $('#tables').html(_html);
+                            if(typeof(data) == 'object' && data.length > 0) {
+                                $('#btn_gendict').removeAttr('disabled');
+                            }
+                        }
+                    });
+                });
+                $('#btn_gendict').click(function(){
+                    $.ajax({
+                        url: 'api.php?act=gendict',
+                        data: { 'dbhost': $('#dbhost').val(), 'dbuser': $('#dbuser').val(), 'dbpwd': $('#dbpwd').val(), 'dbname': $('#dbname').val() },
+                        type: 'POST',
+                        success: function(data) {
+                            var _d = new Date();
+                            var _html = '';
+                            _html += '<div>数据库:'+_cname+'</div>';
+                            _html += '<div>表数量:'+data.length+'</div>';_d.getMonth() + '-' + _d.getDay() + ' ' + _d.getHours() + ':' + _d.getMinutes() + ':' + _d.getSeconds() +'</div>';
+                            for(i in data) {
+                                _html += '<div class="t">表: '+ data[i].table_name +'<br />';
+                                _html += '字段数: '+ data[i].fields.length +' ';
+                                _html += '引擎: '+ data[i].table_info.ENGINE +' ';
+                                if(data[i].table_info.UPDATE_TIME != null) {
+                                    _html += '更新: '+ data[i].table_info.UPDATE_TIME +' ';
+                                }
+                                _html += '备注: '+ data[i].table_info.TABLE_COMMENT +' ';
+                                _html += '</div>';
+                                _html += '<div class="t1">';
+                                _html += '<table><tr><th>字段名</th><th>类型</th><th>自增</th><th>主键</th><th>空</th><th>默认值</th><th>字符集</th><th>排序规则</th><th>备注</th></tr>';
+                                for(var j in data[i].fields) {
+                                    _html += '<tr>';
+                                    _html += '<td>'+ data[i]['fields'][j]['COLUMN_NAME'] +'</td>';
+                                    _html += '<td>'+ data[i]['fields'][j]['DATA_TYPE'] +'</td>';
+                                    _html += '<td>';
+                                    if(data[i]['fields'][j]['EXTRA'] == 'auto_increment') {
+                                        _html += '√';
+                                    }
+                                    _html +='</td>';
+                                    _html += '<td>';
+                                    if(/PRI/.test(data[i]['fields'][j]['COLUMN_KEY'])){ _html += '√'; }
+                                    _html += '</td>';
+
+                                    _html += '<td>'+ ((data[i]['fields'][j]['IS_NULLABLE'] == 'NO') ? '√':'') +'</td>';
+                                    _html += '<td>'+ data[i]['fields'][j]['COLUMN_DEFAULT'] +'</td>';
+                                    _html += '<td>'+ ((data[i]['fields'][j]['CHARACTER_SET_NAME'] == null)?'':data[i]['fields'][j]['CHARACTER_SET_NAME']) +'</td>';
+                                    _html += '<td>'+ ((data[i]['fields'][j]['COLLATION_NAME'] == null)?'':data[i]['fields'][j]['COLLATION_NAME']) +'</td>';
+                                    _html += '<td>'+ data[i]['fields'][j]['COLUMN_COMMENT'] +'</td>';
+                                    _html += '</tr>';
+                                }
+                                _html += '</table></div>';
+                            }
+                            $('#dict_cnt').html(_html);
+                            $('#btn_download').removeAttr('disabled');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
