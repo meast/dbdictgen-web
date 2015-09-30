@@ -86,7 +86,7 @@ th{background:#efefef;border:1px solid #cecece;}
                 <div class="row1 f-cb">
                     <div class="item f-fl">主机: <input type="text" name="dbhost" class="dbhost" id="dbhost" value="localhost"></div>
                     <div class="item f-fl">用户: <input type="text" class="dbuser" id="dbuser" name="dbuser" value="root"></div>
-                    <div class="item f-fl">密码: <input type="text" class="dbpwd" id="dbpwd" name="dbpwd"></div>
+                    <div class="item f-fl">密码: <input type="password" class="dbpwd" id="dbpwd" name="dbpwd"></div>
                     <div class="item f-fl">
                         <button class="btn_connect" id="btn_connect">连接</button>
                     </div>
@@ -132,6 +132,28 @@ th{background:#efefef;border:1px solid #cecece;}
     </div>
     <script type="text/javascript">
         $(function(){
+            $(window).bind('keypress', function(e) {
+                if((e.metaKey || e.ctrlKey)) {
+                    if(e.which == 114) {
+                        console.clear();
+                        if($('#btn_gendict').is(':disabled')) {
+                            // 已禁用
+                        } else {
+                            $('#btn_gendict').trigger('click');
+                        }
+                        e.preventDefault();
+                    }
+                    if(e.which == 115) {
+                        console.clear();
+                        if($('#btn_download').is(':disabled')) {
+                            // 已禁用
+                        } else {
+                            $('#btn_download').trigger('click');
+                        }
+                        e.preventDefault();
+                    }
+                }
+            })
             var _chost = $('#dbhost').val();
             var _cname = $('#dbname').val();
             var _cuser = $('#dbuser').val();
@@ -179,11 +201,11 @@ th{background:#efefef;border:1px solid #cecece;}
     <meta name="keywords" content=""> \
     <meta name="description" content=""> ';
     _html += '<title>Dict: '+ _cname + '</title> ';
-    _html+= '<style>table{width:100%;border-collapse:collapse;} td{border:1px solid #cecece;} th{background:#efefef;border:1px solid #cecece;}.t{margin-top:10px;} .t1{margin-top:10px;}</style> \
+    _html+= '<style>.main{margin:2em 4em;} table{width:100%;border-collapse:collapse;} td{border:1px solid #cecece;} th{background:#efefef;border:1px solid #cecece;}.t{margin-top:10px;} .t1{margin-top:10px;}</style> \
 </head> \
-<body>';
+<body><div class="main">';
     _html += _dict_cnt;
-    _html += '</body></html>';
+    _html += '</div></body></html>';
                     $.ajax({
                         url: 'api.php?act=savedict',
                         data: { dict: _html, dbname: _cname },
@@ -277,7 +299,7 @@ th{background:#efefef;border:1px solid #cecece;}
                                     if(/PRI/.test(data[i]['fields'][j]['COLUMN_KEY'])){ _html += '√'; }
                                     _html += '</td>';
 
-                                    _html += '<td>'+ ((data[i]['fields'][j]['IS_NULLABLE'] == 'NO') ? '√':'') +'</td>';
+                                    _html += '<td>'+ ((data[i]['fields'][j]['IS_NULLABLE'] == 'NO') ? '':'√') +'</td>';
                                     _html += '<td>'+ data[i]['fields'][j]['COLUMN_DEFAULT'] +'</td>';
                                     _html += '<td>'+ ((data[i]['fields'][j]['CHARACTER_SET_NAME'] == null)?'':data[i]['fields'][j]['CHARACTER_SET_NAME']) +'</td>';
                                     _html += '<td>'+ ((data[i]['fields'][j]['COLLATION_NAME'] == null)?'':data[i]['fields'][j]['COLLATION_NAME']) +'</td>';

@@ -2,6 +2,16 @@
 /**
  * charset:utf-8
  */
+$url_ref = '*';
+if(!empty($_SERVER['HTTP_REFERER'])) {
+    # CORS
+    $arr_ref = parse_url($_SERVER['HTTP_REFERER']);
+    $url_ref = $arr_ref['scheme'] . '://' . $arr_ref['host'];
+    if(!empty($arr_ref['port']) && $arr_ref['port'] != 80) {
+        $url_ref .= ':' . $arr_ref['port'];
+    }
+}
+header('Access-Control-Allow-Origin: ' . $url_ref);
 
 $api = new dbdictapi();
 if(!empty($_REQUEST['act'])) {
