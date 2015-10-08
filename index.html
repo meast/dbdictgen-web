@@ -289,7 +289,11 @@ th{background:#efefef;border:1px solid #cecece;}
                                 for(var j in data[i].fields) {
                                     _html += '<tr>';
                                     _html += '<td>'+ data[i]['fields'][j]['COLUMN_NAME'] +'</td>';
-                                    _html += '<td>'+ data[i]['fields'][j]['DATA_TYPE'] +'</td>';
+                                    _html += '<td>'+ data[i]['fields'][j]['COLUMN_TYPE'] + ' / ' + data[i]['fields'][j]['DATA_TYPE'];
+                                    if(data[i]['fields'][j]['CHARACTER_MAXIMUM_LENGTH']) {
+                                        _html += '(' + data[i]['fields'][j]['CHARACTER_MAXIMUM_LENGTH'] + ')';
+                                    }
+                                    _html += '</td>';
                                     _html += '<td>';
                                     if(data[i]['fields'][j]['EXTRA'] == 'auto_increment') {
                                         _html += '√';
