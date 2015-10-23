@@ -43,13 +43,6 @@ class dbdictapi {
     }
 
     public function act_test() {
-        $this -> _dbhost = '172.16.0.166';
-        $this -> _dbuser = 'root';
-        $this -> _dbpwd = 'hetdo';
-        $res = $this -> listdb();
-        echo '<pre>';
-        var_dump($res);
-        echo '</pre>';
         
     }
 
@@ -81,20 +74,29 @@ class dbdictapi {
         $this -> _json_return($res);
     }
 
-    public function act_savedict() {
+    public function act_save() {
         $dict = empty($_REQUEST['dict']) ? '' : $_REQUEST['dict'];
+        $prefix = empty($_REQUEST['prefix']) ? '' : $_REQUEST['prefix'];
+        $type = empty($_REQUEST['type']) ? 'html' : $_REQUEST['type'];
+        $type = strtolower($type);
+        $arr_type_allow = array('html', 'md', 'txt', 'log', 'wiki');
+        if(!in_array($type, $arr_type_allow)) {
+            $type = 'html';
+        }
         $path_save = __DIR__ . '/dict/';
         $res = array('success' => 0, 'msg' => 'error');
         if(!empty($dict)) {
             if(!is_writeable(dirname($path_save))) { @chmod($path_save, 0755); }
             if(!is_dir($path_save)) { @mkdir($path_save, 0755, true); }
-            $file_save = $path_save . 'dict_' . $this -> _dbname . '.html';
+            $file_save = $path_save . $prefix . $this -> _dbname . '.' . $type;
             $res_save = file_put_contents($file_save, $dict);
             if($res_save) {
                 $res['success'] = 1;
                 $res['msg'] = 'success';
-                $res['path'] = './dict/dict_' . $this -> _dbname . '.html';
+                $res['path'] = './dict/' . $prefix . $this -> _dbname . '.' . $type;
             }
+        } else {
+            $res['msg'] = 'empty dict';
         }
         $this -> _json_return($res);
     }

@@ -118,6 +118,7 @@ th{background:#efefef;border:1px solid #cecece;}
                     <div class="row row1 f-fl"><button class="btn_gendict" id="btn_gendict" disabled="disabled">生成字典</button></div>
                     <div class="row row1 f-fl"><button class="btn_freeconnect" id="btn_freeconnect" disabled="disabled">释放连接</button></div>
                     <div class="row row1 f-fl"><button class="btn_download" id="btn_download" disabled="disable">下载</button></div>
+                    <div class="row row1 f-fl"><button class="btn_download_markdown" id="btn_download_markdown" disabled="disable">Wiki Table</button></div>
                 </div>
             </div>
         </div>
@@ -131,6 +132,35 @@ th{background:#efefef;border:1px solid #cecece;}
         </div>
     </div>
     <script type="text/javascript">
+        var _dbDict = [];
+        var jsonToWiki = function(data) {
+                if(typeof(data)  == 'object') {
+                    var _str = '='+$('#dbname').val()+'=';
+
+                    for(var i in data) {
+                        if('table_info' in data[i] && 'fields' in data[i]) {
+                            var _strStart = "\r\n" + '== ' + data[i]['table_name'] + ' ==' + "\r\n";
+                            if(data[i]['table_info']['TABLE_COLLATION']) { _strStart += ' 字符集: ' + data[i]['table_info']['TABLE_COLLATION'] + ' '; }
+                            if(data[i]['table_info']['ENGINE']) { _strStart += ' 存储引擎: ' + data[i]['table_info']    ['ENGINE'] + ' '; }
+                            if(data[i]['table_info']['TABLE_TYPE']) { _strStart += ' 类型: ' + data[i]['table_info'   ]['TABLE_TYPE'] + ' '; }
+                            if(data[i]['table_info']['UPDATE_TIME']) { _strStart += ' 更新时间: ' + data[i]['table_info']['UPDATE_TIME'] + ' '; }
+                            if(data[i]['table_info']['TABLE_COMMENT']) { _strStart += ' 备注: ' + data[i]['table_info']['TABLE_COMMENT'] + ' '; }
+                            _strStart += "\r\n";
+                            _strStart += '{| class="wikitable"' + "\r\n";
+                            _strStart += " |-\r\n! 字段 !! 类型 !!  是否为空 !! 默认值 !! 说明 !! 主键 || 其他 \r\n";
+                            for(var j in data[i]['fields']) {
+                                
+                                _strStart += " |-\r\n | "+data[i]['fields'][j]['COLUMN_NAME']+" || "+data[i]['fields'][j]['COLUMN_TYPE']+" ||  "+data[i]['fields'][j]['IS_NULLABLE']+" || "+data[i]['fields'][j]['COLUMN_DEFAULT']+" || "+data[i]['fields'][j]['COLUMN_COMMENT']+" || "+data[i]['fields'][j]['COLUMN_KEY']+" || "+data[i]['fields'][j]['EXTRA']+"\r\n";
+                            }
+                            _strStart += "|}\r\n";
+                            _str += _strStart;
+                        }
+                    }
+                    return _str;
+                } else {
+                    return '';
+                }
+            }
         $(function(){
             $(window).bind('keypress', function(e) {
                 if((e.metaKey || e.ctrlKey)) {
@@ -186,6 +216,7 @@ th{background:#efefef;border:1px solid #cecece;}
                 $('#btn_listtable').attr('disabled', 'disabled');
                 $('#btn_gendict').attr('disabled', 'disabled');
                 $('#btn_download').attr('disabled', 'disabled');
+                $('#btn_download').attr('disabled', 'disabled');
             }
             var downDict = function() {
                 var _dict_cnt = $('#dict_cnt').html();
@@ -207,8 +238,8 @@ th{background:#efefef;border:1px solid #cecece;}
     _html += _dict_cnt;
     _html += '</div></body></html>';
                     $.ajax({
-                        url: 'api.php?act=savedict',
-                        data: { dict: _html, dbname: _cname },
+                        url: 'api.php',
+                        data: {act: 'save', dbname: _cname, prefix: 'dict_', type: 'html', dict: _html},
                         type: 'POST',
                         success: function(data) {
                             if(data.success) {
@@ -220,9 +251,21 @@ th{background:#efefef;border:1px solid #cecece;}
                     alert('请先按顺序生成数据字典');
                 }
             };
+            
             freeCInfo();
             $('#btn_freeconnect').click(freeCInfo);
             $('#btn_download').click(downDict);
+            $('#btn_download_markdown').click(function() {
+                var _data = jsonToWiki(_dbDict);
+                $.ajax({
+                    url: 'api.php',
+                    data: {act: 'save', dbname: _cname, dict: _data, prefix: 'dict_', type: 'wiki'},
+                    type: 'POST',
+                    success: function(data) {
+                        console.log(data);
+                    }
+                });
+            });
 
             $('#t1_hd').click(function(){ $('#t1_bd').toggle(); });
             $('#btn_connect').click(function(){
@@ -271,13 +314,19 @@ th{background:#efefef;border:1px solid #cecece;}
                         data: { 'dbhost': $('#dbhost').val(), 'dbuser': $('#dbuser').val(), 'dbpwd': $('#dbpwd').val(), 'dbname': $('#dbname').val() },
                         type: 'POST',
                         success: function(data) {
+                            _dbDict = data;
                             var _d = new Date();
                             var _html = '';
                             _html += '<div>数据库:'+_cname+'</div>';
                             _html += '<div>表数量:'+data.length+'</div>';_d.getMonth() + '-' + _d.getDay() + ' ' + _d.getHours() + ':' + _d.getMinutes() + ':' + _d.getSeconds() +'</div>';
                             for(i in data) {
-                                _html += '<div class="t">表: '+ data[i].table_name +'<br />';
+                                _html += '<div class="t">';
+                                if(data[i]['table_info']['TABLE_TYPE'] == 'VIEW') { _html += '视图: '; }
+                                else { _html += '表: '; }
+                                _html += data[i].table_name +'<br />';
+                                _html += '类型: ' + data[i]['table_info']['TABLE_TYPE'] + ' ';
                                 _html += '字段数: '+ data[i].fields.length +' ';
+                                _html += '行数: '+ data[i].table_info.TABLE_ROWS +' ';
                                 _html += '引擎: '+ data[i].table_info.ENGINE +' ';
                                 if(data[i].table_info.UPDATE_TIME != null) {
                                     _html += '更新: '+ data[i].table_info.UPDATE_TIME +' ';
@@ -285,7 +334,7 @@ th{background:#efefef;border:1px solid #cecece;}
                                 _html += '备注: '+ data[i].table_info.TABLE_COMMENT +' ';
                                 _html += '</div>';
                                 _html += '<div class="t1">';
-                                _html += '<table><tr><th>字段名</th><th>类型</th><th>自增</th><th>主键</th><th>空</th><th>默认值</th><th>字符集</th><th>排序规则</th><th>备注</th></tr>';
+                                _html += '<table><tr><th>字段名</th><th>类型</th><th>自增</th><th>主键</th><th>额外</th><th>空</th><th>默认值</th><th>字符集</th><th>排序规则</th><th>备注</th></tr>';
                                 for(var j in data[i].fields) {
                                     _html += '<tr>';
                                     _html += '<td>'+ data[i]['fields'][j]['COLUMN_NAME'] +'</td>';
@@ -295,13 +344,14 @@ th{background:#efefef;border:1px solid #cecece;}
                                     }
                                     _html += '</td>';
                                     _html += '<td>';
-                                    if(data[i]['fields'][j]['EXTRA'] == 'auto_increment') {
-                                        _html += '√';
-                                    }
+                                    if(data[i]['fields'][j]['EXTRA'] == 'auto_increment') { _html += '√'; }
                                     _html +='</td>';
                                     _html += '<td>';
-                                    if(/PRI/.test(data[i]['fields'][j]['COLUMN_KEY'])){ _html += '√'; }
+                                    if(/PRI/ig.test(data[i]['fields'][j]['COLUMN_KEY'])){ _html += '√'; }
                                     _html += '</td>';
+                                    
+                                    _html += '<td>'+data[i]['fields'][j]['EXTRA']+'</td>';
+                                    
 
                                     _html += '<td>'+ ((data[i]['fields'][j]['IS_NULLABLE'] == 'NO') ? '':'√') +'</td>';
                                     _html += '<td>'+ data[i]['fields'][j]['COLUMN_DEFAULT'] +'</td>';
@@ -314,6 +364,7 @@ th{background:#efefef;border:1px solid #cecece;}
                             }
                             $('#dict_cnt').html(_html);
                             $('#btn_download').removeAttr('disabled');
+                            $('#btn_download_markdown').removeAttr('disabled');
                         }
                     });
                 });
